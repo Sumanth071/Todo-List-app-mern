@@ -2,15 +2,20 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './index.css';
 
-const API_URL = 'http://localhost:5000/api/todos';
+// ✅ Use environment variable for API URL
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api/todos';
 
 function App() {
   const [todos, setTodos] = useState([]);
   const [text, setText] = useState('');
 
   const fetchTodos = async () => {
-    const res = await axios.get(API_URL);
-    setTodos(res.data);
+    try {
+      const res = await axios.get(API_URL);
+      setTodos(res.data);
+    } catch (error) {
+      console.error('Error fetching todos:', error.message);
+    }
   };
 
   useEffect(() => {
@@ -19,22 +24,34 @@ function App() {
 
   const addTodo = async () => {
     if (!text.trim()) return;
-    const res = await axios.post(API_URL, { text });
-    setTodos([...todos, res.data]);
-    setText('');
+    try {
+      const res = await axios.post(API_URL, { text });
+      setTodos([...todos, res.data]);
+      setText('');
+    } catch (error) {
+      console.error('Error adding todo:', error.message);
+    }
   };
 
   const toggleComplete = async (todo) => {
-    const res = await axios.put(`${API_URL}/${todo._id}`, {
-      ...todo,
-      completed: !todo.completed,
-    });
-    setTodos(todos.map((t) => (t._id === res.data._id ? res.data : t)));
+    try {
+      const res = await axios.put(`${API_URL}/${todo._id}`, {
+        ...todo,
+        completed: !todo.completed,
+      });
+      setTodos(todos.map((t) => (t._id === res.data._id ? res.data : t)));
+    } catch (error) {
+      console.error('Error updating todo:', error.message);
+    }
   };
 
   const deleteTodo = async (id) => {
-    await axios.delete(`${API_URL}/${id}`);
-    setTodos(todos.filter((t) => t._id !== id));
+    try {
+      await axios.delete(`${API_URL}/${id}`);
+      setTodos(todos.filter((t) => t._id !== id));
+    } catch (error) {
+      console.error('Error deleting todo:', error.message);
+    }
   };
 
   return (
